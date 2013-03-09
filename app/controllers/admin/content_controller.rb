@@ -55,8 +55,8 @@ class Admin::ContentController < Admin::BaseController
   def merge_with
     u = User.find(session[:user])
     if u.admin?
-      article1_to_merge = Article.where("id = ?", params[:id])
-      article2_to_merge = Article.where("id = ?", params[:merge_with])
+      article1_to_merge = Article.find_by_id(params[:id])
+      article2_to_merge = Article.find_by_id(params[:merge_with])
       if article1_to_merge != [] and !article1_to_merge.nil? and article2_to_merge != [] and !article2_to_merge.nil?
         @article = article1_to_merge.merge_with(params[:merge_with])
         redirect_to admin_content_path
