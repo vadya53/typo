@@ -2,10 +2,12 @@
 
 <%= render "admin/shared/edit", { :form_type => "article", :form_action => { :action => "new", :id => @article.id , :class => ('autosave')} } %>
 
-<%= form_tag :contoller => "admin/content", :action => 'merge_with', :id => @article.id do %>
+<% if current_user.admin? and params[:action] == "edit" %>
+ <%= form_tag :contoller => "admin/content", :action => 'merge_with', :id => @article.id do %>
   <h4><%= _("Merge Articles") %></h4>
   <div class='class'>
     Article ID <%= text_field_tag :merge_with %>
   </div>
   <input id='merge_button' type="submit" value="<%= _('Merge') %>" name="merge_button" />
+ <% end %>
 <% end %>
