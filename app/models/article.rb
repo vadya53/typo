@@ -418,23 +418,20 @@ class Article < Content
 
   def merge_with(id)
     article_to_merge = Article.find_by_id(id)
-    new_title = self.title
-    new_body = self.body + "\n" + article_to_merge.body
-    new_author = self.user
-    
-    new_article = Article.new(:title => new_title, :body => new_body, :user => new_author, :published => true)
-    new_article.save!
+    if article_to_merge
+      self.body = self.body + "\n" + article_to_merge.body
 
-    comments_to_merge = Comment.where("article_id IN (?,?)", self.id, id)
-    comments_to_merge.each do |comment|
-      c = Comment.new({:author => comment.author,
-                  :article => new_article,
-                  :body => comment.body,
-                  :ip => comment.ip})
-      c.save!
+      comments_to_merge = Comment.where("article_id = ?", id)
+      comments_to_merge.each do |comment|
+        comment.article_id = self.id
+        comment.save!
+      end
+
+      article_to_merge.destroy
+      self.save
     end
 
-    return new_article
+    return self
   end
 
   protected
