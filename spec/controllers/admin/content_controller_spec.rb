@@ -474,12 +474,60 @@ describe Admin::ContentController do
       @user.save
       @article = Factory(:article)
       request.session = { :user => @user.id }
+      @first_article = Factory.build("article")
+      @second_article = Factory.build("article")
     end
 
     it_should_behave_like 'index action'
     it_should_behave_like 'new action'
     it_should_behave_like 'destroy action'
     it_should_behave_like 'autosave action'
+    
+    describe 'merge action' do
+      describe 'an admin should be allowed to merge articles' do
+        it 'should allow an admin to merge articles' do
+          put :merge_with, :id => '1', :merge_with => '2'
+          response.should redirect_to(admin_content_path)
+        end
+      end
+      
+      describe 'an admin should not be able to merge a non-existent article' do
+        it 'should show a flash error message if you merge a non-existent article' do
+          put :merge_with, :id => '1', :merge_with => '42'
+          flash[:error].should_not be_blank
+        end
+      end
+      
+      describe 'merged article should contain the text of original articles' do
+        it 'should concatenate the text from both articles' do
+          first_article_body = @first_article.body
+          second_article_body = @second_article.body
+          put :merge_with, :id => '1', :merge_with => '2'
+          result = Article.last
+          result.body =~ /.*#{first_article_body}.*#{second_article_body}.*/
+        end
+      end
+      
+      describe 'merged article have one author' do
+        it 'should keep the author of the first article to be the author of the merged article' do
+          first_author = @first_article.author
+          put :merge_with, :id => '1', :merge_with => '2'
+          result = Article.last
+          result.author.should == first_author
+        end
+      end
+      
+      describe 'merged article have comments from both articles' do
+        it 'should append the comments from thesecond article to the first article' do
+          second_article_comments = @second_article.published_comments
+          put :merge_with, :id => '1', :merge_with => '2'
+          result = Article.last
+          second_article_comments.each do |c|
+            result.published_comments.include?(c)
+          end
+        end
+      end
+    end
 
     describe 'edit action' do
 
@@ -621,6 +669,15 @@ describe Admin::ContentController do
     it_should_behave_like 'index action'
     it_should_behave_like 'new action'
     it_should_behave_like 'destroy action'
+    
+    describe 'merge action' do
+      describe 'a non-admin cannot merge articles' do
+        it 'should not allow a non-admin to merge articles' do
+          put :merge_with, :id => '1', :merge_with => '2'
+          response.should redirect_to(root_path)
+        end
+      end
+    end
 
     describe 'edit action' do
 

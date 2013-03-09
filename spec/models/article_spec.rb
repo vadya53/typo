@@ -630,5 +630,19 @@ describe Article do
     end
 
   end
+  
+  describe 'merging two articles' do
+    before :each do
+      @art1 = Article.create! :title => "Article 1", :body => "Body 1"
+      @art2 = Article.create! :title => "Article 2", :body => "Body 2"
+      @art1.merge_with(@art2.id)
+    end
+    
+    it 'should not delete both articles after merging second with the first' do
+      result1 = Article.where("id = ?", @art1.id)
+      result2 = Article.where("id = ?", @art2.id)
+      result1.should_not == [] and result2.should_not == []
+    end
+  end
 end
 

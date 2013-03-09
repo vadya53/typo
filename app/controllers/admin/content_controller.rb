@@ -51,6 +51,23 @@ class Admin::ContentController < Admin::BaseController
     flash[:notice] = _("This article was deleted successfully")
     redirect_to :action => 'index'
   end
+  
+  def merge_with
+    u = User.find(session[:user])
+    if u.admin?
+      article1_to_merge = Article.where("id = ?", params[:id])
+      article2_to_merge = Article.where("id = ?", params[:merge_with])
+      if article1_to_merge != [] and !article1_to_merge.nil? and article2_to_merge != [] and !article2_to_merge.nil?
+        @article = article1_to_merge.merge_with(params[:merge_with])
+        redirect_to admin_content_path
+      else
+        redirect_to admin_content_path
+        flash[:error] = "The article you tried to merge is not exists!"
+      end
+    else
+      redirect_to root_path
+    end
+  end
 
   def insert_editor
     editor = 'visual'
