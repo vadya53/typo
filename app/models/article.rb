@@ -118,22 +118,8 @@ class Article < Content
       list_function << "per(paginate_hash[:per_page])"
 
       eval(list_function.join('.'))
-    end
+    end   
 
-  end
-  
-  def merge_with(id)
-    article_to_merge = Article.find(id)
-    new_title = self.title
-    new_body = self.body + article_to_merge.body
-    comments_to_merge = Comment.where("article_id = ?", id)
-    new_article = Article.new(:title => new_title, :body => new_body, :published => true)
-    comments_to_merge.each do |comment|
-      Comment.new({:author => comment.author,
-                :article => new_article,
-                :body => comment.body,
-                :ip => comment.ip})
-    end
   end
 
   def year_url
@@ -480,4 +466,22 @@ class Article < Content
     to = to - 1 # pull off 1 second so we don't overlap onto the next day
     return from..to
   end
+
+  def merge_with(id)
+    article_to_merge = Article.where("id = ?", id)
+    new_title = '' #self.title
+    new_body = self.body + article_to_merge.body
+    comments_to_merge = Comment.where("article_id = ?", id)
+    new_article = Article.new(:title => new_title, :body => new_body, :published => true)
+    new_article.save!
+    comments_to_merge.each do |comment|
+      c = Comment.new({:author => comment.author,
+                  :article => new_article,
+                  :body => comment.body,
+                  :ip => comment.ip})
+      c.save!
+    end
+    return new_article
+  end
+
 end
