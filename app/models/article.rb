@@ -467,9 +467,9 @@ class Article < Content
     return from..to
   end
 
-  def merge_with(id)
+  def self.merge_with(id)
     article_to_merge = Article.where("id = ?", id)
-    new_title = '' #self.title
+    new_title = self.title
     new_body = self.body + article_to_merge.body
     comments_to_merge = Comment.where("article_id = ?", id)
     new_article = Article.new(:title => new_title, :body => new_body, :published => true)
